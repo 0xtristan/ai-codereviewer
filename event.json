@@ -1,0 +1,14 @@
+{
+  "pull_request": {
+    "number": 1,
+    "title": "Test PR",
+    "body": "This is a test pull request"
+  },
+  "repository": {
+    "name": "test-repo",
+    "owner": {
+      "login": "test-owner"
+    }
+  },
+  "action": "opened"
+}

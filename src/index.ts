@@ -1,5 +1,6 @@
 import { readFileSync } from "fs";
 import * as core from "@actions/core";
+import * as github from "@actions/github";
 import OpenAI from "openai";
 import { Octokit } from "@octokit/rest";
 import parseDiff, { Chunk, File } from "parse-diff";
@@ -24,20 +25,26 @@ interface PRDetails {
 }
 
 async function getPRDetails(): Promise<PRDetails> {
-  const { repository, number } = JSON.parse(
-    readFileSync(process.env.GITHUB_EVENT_PATH || "", "utf8")
-  );
-  const prResponse = await octokit.pulls.get({
-    owner: repository.owner.login,
-    repo: repository.name,
-    pull_number: number,
+  const context = github.context;
+  if (!context.payload.pull_request) {
+    throw new Error("This action can only be run on pull requests");
+  }
+
+  const { owner, repo } = context.repo;
+  const pull_number = context.payload.pull_request.number;
+
+  const { data: pullRequest } = await octokit.rest.pulls.get({
+    owner,
+    repo,
+    pull_number,
   });
+
   return {
-    owner: repository.owner.login,
-    repo: repository.name,
-    pull_number: number,
-    title: prResponse.data.title ?? "",
-    description: prResponse.data.body ?? "",
+    owner,
+    repo,
+    pull_number,
+    title: pullRequest.title,
+    description: pullRequest.body || "",
   };
 }
 
