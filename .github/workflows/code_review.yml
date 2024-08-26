@@ -15,7 +15,7 @@ jobs:
         uses: ./
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_API_MODEL: "gpt-4o-mini"
+          API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          AI_MODEL: "gpt-4o-mini"
           exclude: "yarn.lock,dist/**"
           custom_instructions: "Ignore logging changes, Only focus on important changes"

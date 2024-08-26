@@ -2,10 +2,11 @@ import * as core from "@actions/core";
 import { File as DiffFile } from "parse-diff";
 import { ReviewComment } from "./types";
 import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 
-const OPENAI_API_KEY = core.getInput("OPENAI_API_KEY");
-const OPENAI_API_MODEL = core.getInput("OPENAI_API_MODEL");
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+const API_KEY = core.getInput("OPENAI_API_KEY");
+const AI_MODEL = core.getInput("AI_MODEL");
+const openai = new OpenAI({ apiKey: API_KEY });
 const customInstructions = core.getInput("custom_instructions");
 
 export function createReviewPrompt(
@@ -69,24 +70,38 @@ ${customInstructions
 }
 
 export async function callModel(prompt: string): Promise<string> {
-  const queryConfig = {
-    model: OPENAI_API_MODEL,
-    temperature: 0.2,
-    max_tokens: 700,
-    top_p: 1,
-    frequency_penalty: 0,
-    presence_penalty: 0,
-  };
-  const response = await openai.chat.completions.create({
-    ...queryConfig,
-    messages: [{ role: "user", content: prompt }],
-    ...(OPENAI_API_MODEL.startsWith("gpt-4") ||
-    OPENAI_API_MODEL.startsWith("gpt-3.5-turbo")
-      ? { response_format: { type: "json_object" } }
-      : {}),
-  });
+  if (AI_MODEL.startsWith("claude-3")) {
+    const anthropicClient = new Anthropic({
+      apiKey: API_KEY,
+    });
+    const response = await anthropicClient.messages.create({
+      model: AI_MODEL,
+      max_tokens: 700,
+      temperature: 0.2,
+      messages: [{ role: "user", content: prompt }],
+    });
+    return response.content[0].type === "text"
+      ? response.content[0].text.trim()
+      : "";
+  } else {
+    const queryConfig = {
+      model: AI_MODEL,
+      temperature: 0.2,
+      max_tokens: 700,
+      top_p: 1,
+      frequency_penalty: 0,
+      presence_penalty: 0,
+    };
+    const response = await openai.chat.completions.create({
+      ...queryConfig,
+      messages: [{ role: "user", content: prompt }],
+      ...(AI_MODEL.startsWith("gpt-4") || AI_MODEL.startsWith("gpt-3.5-turbo")
+        ? { response_format: { type: "json_object" } }
+        : {}),
+    });
 
-  return response.choices[0].message.content?.trim() || "";
+    return response.choices[0].message.content?.trim() || "";
+  }
 }
 
 export function parseAIResponse(
