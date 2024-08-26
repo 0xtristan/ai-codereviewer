@@ -7,7 +7,7 @@ import { ReviewComment } from "./types";
 const GITHUB_TOKEN = core.getInput("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-async function getLastPushedCommit(
+async function getPreviousCommit(
   owner: string,
   repo: string,
   pull_number: number
@@ -52,12 +52,12 @@ export async function getDiff(
       pull_number,
     });
     const headSha = eventData.head.sha;
-    const parentSha = await getLastPushedCommit(owner, repo, pull_number);
+    const previousSha = await getPreviousCommit(owner, repo, pull_number);
 
     const response = await octokit.repos.compareCommits({
       owner,
       repo,
-      base: parentSha,
+      base: previousSha,
       head: headSha,
       mediaType: { format: "diff" },
     });

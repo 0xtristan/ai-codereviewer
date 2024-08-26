@@ -60,6 +60,7 @@ Provide a code review in JSON format:
 
 Specifically your instructions are:
 - Focus on code quality, best practices, and potential issues.
+- Avoid being too nitpicky, it's ok to ignore minor issues and return an empty array for comments.
 - Only provide comments on code that has changed.
 - Do not suggest adding comments to the code.
 - Do not comment on style or formatting.
