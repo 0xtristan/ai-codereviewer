@@ -65,14 +65,14 @@ export async function getPRContext() {
     pull_number,
   });
   const diff = await getDiff(owner, repo, pull_number, action);
-  const parsedDiff = parseDiff(String(diff));
-  // Only include files that have a diff
-  const files = parsedDiff
-    .filter((file): file is DiffFile & { to: string } => file.to !== undefined)
-    .map((file) => ({
-      filename: file.to,
-      status: file.deleted ? "removed" : file.new ? "added" : "modified",
-    }));
+  const parsedDiff = parseDiff(String(diff)).filter(
+    // Only include files that have a diff
+    (file): file is DiffFile & { to: string } => file.chunks.length > 0
+  );
+  const files = parsedDiff.map((file) => ({
+    filename: file.to,
+    status: file.deleted ? "removed" : file.new ? "added" : "modified",
+  }));
 
   return { pr, files, parsedDiff, owner, repo, pull_number };
 }

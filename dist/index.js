@@ -38840,6 +38840,7 @@ const openai_1 = __importDefault(__nccwpck_require__(47));
 const sdk_1 = __importDefault(__nccwpck_require__(1410));
 const INFERENCE_API_KEY = core.getInput("INFERENCE_API_KEY");
 const MODEL = core.getInput("MODEL");
+// TODO: Conditional import for openai and anthropic
 const openai = new openai_1.default({ apiKey: INFERENCE_API_KEY });
 const customInstructions = core.getInput("custom_instructions");
 function createReviewPrompt(prContext, repoContext, file, content) {
@@ -39050,11 +39051,10 @@ function getPRContext() {
             pull_number,
         });
         const diff = yield getDiff(owner, repo, pull_number, action);
-        const parsedDiff = (0, parse_diff_1.default)(String(diff));
+        const parsedDiff = (0, parse_diff_1.default)(String(diff)).filter(
         // Only include files that have a diff
-        const files = parsedDiff
-            .filter((file) => file.to !== undefined)
-            .map((file) => ({
+        (file) => file.chunks.length > 0);
+        const files = parsedDiff.map((file) => ({
             filename: file.to,
             status: file.deleted ? "removed" : file.new ? "added" : "modified",
         }));
