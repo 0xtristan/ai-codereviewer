@@ -4,13 +4,13 @@ inputs:
   GITHUB_TOKEN:
     description: "GitHub token to interact with the repository."
     required: true
-  OPENAI_API_KEY:
-    description: "OpenAI API key for GPT."
+  INFERENCE_API_KEY:
+    description: "OpenAI or Anthropic API key for LLM inference."
     required: true
-  OPENAI_API_MODEL:
-    description: "OpenAI API model."
+  MODEL:
+    description: "AI model to use for the code review."
     required: false
-    default: "gpt-4"
+    default: "gpt-4o-mini"
   exclude:
     description: "Glob patterns to exclude files from the diff analysis"
     required: false

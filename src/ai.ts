@@ -4,9 +4,9 @@ import { ReviewComment } from "./types";
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 
-const API_KEY = core.getInput("OPENAI_API_KEY");
-const AI_MODEL = core.getInput("AI_MODEL");
-const openai = new OpenAI({ apiKey: API_KEY });
+const INFERENCE_API_KEY = core.getInput("INFERENCE_API_KEY");
+const MODEL = core.getInput("MODEL");
+const openai = new OpenAI({ apiKey: INFERENCE_API_KEY });
 const customInstructions = core.getInput("custom_instructions");
 
 export function createReviewPrompt(
@@ -70,12 +70,12 @@ ${customInstructions
 }
 
 export async function callModel(prompt: string): Promise<string> {
-  if (AI_MODEL.startsWith("claude-3")) {
+  if (MODEL.startsWith("claude-3")) {
     const anthropicClient = new Anthropic({
-      apiKey: API_KEY,
+      apiKey: INFERENCE_API_KEY,
     });
     const response = await anthropicClient.messages.create({
-      model: AI_MODEL,
+      model: MODEL,
       max_tokens: 700,
       temperature: 0.2,
       messages: [{ role: "user", content: prompt }],
@@ -85,7 +85,7 @@ export async function callModel(prompt: string): Promise<string> {
       : "";
   } else {
     const queryConfig = {
-      model: AI_MODEL,
+      model: MODEL,
       temperature: 0.2,
       max_tokens: 700,
       top_p: 1,
@@ -95,7 +95,7 @@ export async function callModel(prompt: string): Promise<string> {
     const response = await openai.chat.completions.create({
       ...queryConfig,
       messages: [{ role: "user", content: prompt }],
-      ...(AI_MODEL.startsWith("gpt-4") || AI_MODEL.startsWith("gpt-3.5-turbo")
+      ...(MODEL.startsWith("gpt-4") || MODEL.startsWith("gpt-3.5-turbo")
         ? { response_format: { type: "json_object" } }
         : {}),
     });
