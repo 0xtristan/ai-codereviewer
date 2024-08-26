@@ -38885,6 +38885,7 @@ Provide a code review in JSON format:
 
 Specifically your instructions are:
 - Focus on code quality, best practices, and potential issues.
+- Only provide comments on code that has changed.
 - Do not suggest adding comments to the code.
 - Do not comment on style or formatting.
 - Do not give positive comments or compliments, only provide feedback when there is something to improve.
@@ -38997,6 +38998,16 @@ const core = __importStar(__nccwpck_require__(2186));
 const parse_diff_1 = __importDefault(__nccwpck_require__(4833));
 const GITHUB_TOKEN = core.getInput("GITHUB_TOKEN");
 const octokit = new rest_1.Octokit({ auth: GITHUB_TOKEN });
+function getParentCommit(owner, repo, sha) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { data: commit } = yield octokit.repos.getCommit({
+            owner,
+            repo,
+            ref: sha,
+        });
+        return commit.parents[0].sha;
+    });
+}
 function getDiff(owner, repo, pull_number, action) {
     return __awaiter(this, void 0, void 0, function* () {
         // Do a full diff on new PRs, but do an incremental diff on updates
@@ -39015,13 +39026,13 @@ function getDiff(owner, repo, pull_number, action) {
                 repo,
                 pull_number,
             });
-            const newBaseSha = eventData.base.sha;
-            const newHeadSha = eventData.head.sha;
+            const headSha = eventData.head.sha;
+            const parentSha = yield getParentCommit(owner, repo, headSha);
             const response = yield octokit.repos.compareCommits({
                 owner,
                 repo,
-                base: newBaseSha,
-                head: newHeadSha,
+                base: parentSha,
+                head: headSha,
                 mediaType: { format: "diff" },
             });
             return response.data;
@@ -39042,6 +39053,7 @@ function getPRContext() {
         if (!pull_number) {
             throw new Error("This action can only be run on pull requests");
         }
+        console.log("PR action", action);
         if (!action) {
             throw new Error("Unable to determine pull request action");
         }
@@ -39147,6 +39159,10 @@ const core = __importStar(__nccwpck_require__(2186));
 const minimatch_1 = __importDefault(__nccwpck_require__(2002));
 const ai_1 = __nccwpck_require__(2148);
 const git_1 = __nccwpck_require__(6350);
+// TODO: fix incremental diffs not being detected correctly
+// TODO: add conditional review when added as reviewer
+// TODO: customize the bot name and avatar
+// TODO: set up cicd to deploy the action
 function prepareReviewContext(prContext) {
     return __awaiter(this, void 0, void 0, function* () {
         const { pr, files, parsedDiff, owner, repo } = prContext;

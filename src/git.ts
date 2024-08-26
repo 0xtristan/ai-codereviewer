@@ -7,6 +7,15 @@ import { ReviewComment } from "./types";
 const GITHUB_TOKEN = core.getInput("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
+async function getParentCommit(owner: string, repo: string, sha: string) {
+  const { data: commit } = await octokit.repos.getCommit({
+    owner,
+    repo,
+    ref: sha,
+  });
+  return commit.parents[0].sha;
+}
+
 export async function getDiff(
   owner: string,
   repo: string,
@@ -28,14 +37,14 @@ export async function getDiff(
       repo,
       pull_number,
     });
-    const newBaseSha = eventData.base.sha;
-    const newHeadSha = eventData.head.sha;
+    const headSha = eventData.head.sha;
+    const parentSha = await getParentCommit(owner, repo, headSha);
 
     const response = await octokit.repos.compareCommits({
       owner,
       repo,
-      base: newBaseSha,
-      head: newHeadSha,
+      base: parentSha,
+      head: headSha,
       mediaType: { format: "diff" },
     });
     return response.data;
@@ -55,6 +64,7 @@ export async function getPRContext() {
     throw new Error("This action can only be run on pull requests");
   }
 
+  console.log("PR action", action);
   if (!action) {
     throw new Error("Unable to determine pull request action");
   }

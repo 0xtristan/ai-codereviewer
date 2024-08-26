@@ -10,6 +10,7 @@ import {
   submitReviewComments,
 } from "./git";
 
+// TODO: fix incremental diffs not being detected correctly
 // TODO: add conditional review when added as reviewer
 // TODO: customize the bot name and avatar
 // TODO: set up cicd to deploy the action
