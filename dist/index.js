@@ -38838,9 +38838,9 @@ exports.parseAIResponse = parseAIResponse;
 const core = __importStar(__nccwpck_require__(2186));
 const openai_1 = __importDefault(__nccwpck_require__(47));
 const sdk_1 = __importDefault(__nccwpck_require__(1410));
-const OPENAI_API_KEY = core.getInput("OPENAI_API_KEY");
-const OPENAI_API_MODEL = core.getInput("OPENAI_API_MODEL");
-const openai = new openai_1.default({ apiKey: OPENAI_API_KEY });
+const INFERENCE_API_KEY = core.getInput("INFERENCE_API_KEY");
+const MODEL = core.getInput("MODEL");
+const openai = new openai_1.default({ apiKey: INFERENCE_API_KEY });
 const customInstructions = core.getInput("custom_instructions");
 function createReviewPrompt(prContext, repoContext, file, content) {
     const diffReviews = file.chunks
@@ -38896,12 +38896,12 @@ ${customInstructions
 function callModel(prompt) {
     return __awaiter(this, void 0, void 0, function* () {
         var _a;
-        if (OPENAI_API_MODEL.startsWith("claude-3")) {
+        if (MODEL.startsWith("claude-3")) {
             const anthropicClient = new sdk_1.default({
-                apiKey: OPENAI_API_KEY,
+                apiKey: INFERENCE_API_KEY,
             });
             const response = yield anthropicClient.messages.create({
-                model: OPENAI_API_MODEL,
+                model: MODEL,
                 max_tokens: 700,
                 temperature: 0.2,
                 messages: [{ role: "user", content: prompt }],
@@ -38912,15 +38912,14 @@ function callModel(prompt) {
         }
         else {
             const queryConfig = {
-                model: OPENAI_API_MODEL,
+                model: MODEL,
                 temperature: 0.2,
                 max_tokens: 700,
                 top_p: 1,
                 frequency_penalty: 0,
                 presence_penalty: 0,
             };
-            const response = yield openai.chat.completions.create(Object.assign(Object.assign(Object.assign({}, queryConfig), { messages: [{ role: "user", content: prompt }] }), (OPENAI_API_MODEL.startsWith("gpt-4") ||
-                OPENAI_API_MODEL.startsWith("gpt-3.5-turbo")
+            const response = yield openai.chat.completions.create(Object.assign(Object.assign(Object.assign({}, queryConfig), { messages: [{ role: "user", content: prompt }] }), (MODEL.startsWith("gpt-4") || MODEL.startsWith("gpt-3.5-turbo")
                 ? { response_format: { type: "json_object" } }
                 : {})));
             return ((_a = response.choices[0].message.content) === null || _a === void 0 ? void 0 : _a.trim()) || "";

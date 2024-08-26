@@ -6,6 +6,7 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const INFERENCE_API_KEY = core.getInput("INFERENCE_API_KEY");
 const MODEL = core.getInput("MODEL");
+// TODO: Conditional import for openai and anthropic
 const openai = new OpenAI({ apiKey: INFERENCE_API_KEY });
 const customInstructions = core.getInput("custom_instructions");
 
