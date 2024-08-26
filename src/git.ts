@@ -7,13 +7,27 @@ import { ReviewComment } from "./types";
 const GITHUB_TOKEN = core.getInput("GITHUB_TOKEN");
 const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-async function getParentCommit(owner: string, repo: string, sha: string) {
-  const { data: commit } = await octokit.repos.getCommit({
-    owner,
-    repo,
-    ref: sha,
-  });
-  return commit.parents[0].sha;
+async function getLastPushedCommit(
+  owner: string,
+  repo: string,
+  pull_number: number
+) {
+  try {
+    const { data: commits } = await octokit.pulls.listCommits({
+      owner,
+      repo,
+      pull_number,
+    });
+
+    if (commits.length === 0) {
+      throw new Error("No commits found in the pull request");
+    }
+
+    return commits[commits.length - 1].sha;
+  } catch (error) {
+    console.error("Error fetching last pushed commit:", error);
+    throw error;
+  }
 }
 
 export async function getDiff(
@@ -38,7 +52,7 @@ export async function getDiff(
       pull_number,
     });
     const headSha = eventData.head.sha;
-    const parentSha = await getParentCommit(owner, repo, headSha);
+    const parentSha = await getLastPushedCommit(owner, repo, pull_number);
 
     const response = await octokit.repos.compareCommits({
       owner,
