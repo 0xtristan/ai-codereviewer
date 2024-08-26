@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc --sourceMap",
     "package": "ncc build src/index.ts --source-map --license licenses.txt",
+    "act": "yarn package && act pull_request -e event.json",
     "format": "prettier --write .",
     "lint": "prettier --check ."
   },
