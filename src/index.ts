@@ -10,6 +10,10 @@ import {
   submitReviewComments,
 } from "./git";
 
+// TODO: add conditional review when added as reviewer
+// TODO: customize the bot name and avatar
+// TODO: set up cicd to deploy the action
+
 async function prepareReviewContext(
   prContext: Awaited<ReturnType<typeof getPRContext>>
 ) {
